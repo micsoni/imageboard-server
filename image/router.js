@@ -12,7 +12,18 @@ router.get("/images", async (req, res, next) => {
   }
 });
 
-module.exports = router
+router.post("/images", async (req, res, next) => {
+  try {
+    const imageBody = req.body;
+    console.log("BODY", imageBody);
+    const postImage = await Image.create(req.body);
+    res.send(postImage);
+  } catch (error) {
+    next(error);
+  }
+});
+
+module.exports = router;
 
 // EXAMPLE from David, writing the async function first and using it as a callback
 // async function getPosts (request, response, next) {
