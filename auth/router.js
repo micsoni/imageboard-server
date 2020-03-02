@@ -1,46 +1,50 @@
 const { Router } = require("express");
 const { toJWT, toData } = require("./jwt");
+const User = require("../user/model");
+const bcrypt = require("bcrypt");
+const auth = require("./middleware");
 
 const router = new Router();
 
 router.post("/login", async (req, res, next) => {
   try {
     const loginInfo = req.body;
-    console.log("BODY", loginInfo);
-    if (!req.body.email || !req.body.password) {
+    if (!loginInfo.email || !loginInfo.password) {
       res.status(400).send({
         message: "Please supply a valid email and password"
       });
     } else {
-      res.send({
-        jwt: toJWT({ userId: 1 })
+      const userFound = await User.findOne({
+        where: {
+          email: loginInfo.email
+        }
       });
+      if (!userFound) {
+        res.status(400).send({
+          message: "User with that email does not exist"
+        });
+      } else if (bcrypt.compareSync(loginInfo.password, userFound.password)) {
+        res.send({
+          jwt: toJWT({ userId: userFound.id })
+        });
+      } else {
+        res.status(400).send({
+          message: "Password was incorrect"
+        });
+      }
     }
   } catch (error) {
-    next(error);
+    console.error(err);
+    res.status(500).send({
+      message: "Something went wrong"
+    });
   }
 });
 
-router.get("/secret-endpoint", (req, res) => {
-  const auth =
-    req.headers.authorization && req.headers.authorization.split(" ");
-  if (auth && auth[0] === "Bearer" && auth[1]) {
-    try {
-      const data = toData(auth[1]);
-      res.send({
-        message: "Thanks for visiting the secret endpoint.",
-        data
-      });
-    } catch (error) {
-      res.status(400).send({
-        message: `Error ${error.name}: ${error.message}`
-      });
-    }
-  } else {
-    res.status(401).send({
-      message: "Please supply some valid credentials"
-    });
-  }
+router.get("/secret-endpoint", auth, (req, res) => {
+  res.send({
+    message: `Thanks for visiting the secret endpoint ${req.user.email}.`
+  });
 });
 
 module.exports = router;
