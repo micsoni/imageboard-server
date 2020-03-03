@@ -8,6 +8,7 @@ router.post("/user", async (req, res, next) => {
   try {
     const userCredentials = {
       email: req.body.email,
+      username: req.body.username,
       password: bcrypt.hashSync(req.body.password, 10)
     };
     if (!userCredentials.email || !userCredentials.password) {
@@ -26,7 +27,7 @@ router.post("/user", async (req, res, next) => {
 router.get("/user", async (req, res, next) => {
   try {
     const showUsers = await User.findAll();
-    console.log(showUsers)
+    console.log(showUsers);
     res.send(showUsers);
   } catch (error) {
     next(error);
