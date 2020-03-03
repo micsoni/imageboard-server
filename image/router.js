@@ -1,5 +1,6 @@
 const express = require("express");
 const Image = require("./model");
+const auth = require("../auth/middleware");
 
 const router = express.Router();
 
@@ -12,7 +13,7 @@ router.get("/images", async (req, res, next) => {
   }
 });
 
-router.post("/images", async (req, res, next) => {
+router.post("/images", auth, async (req, res, next) => {
   try {
     const imageBody = req.body;
     console.log("BODY", imageBody);
