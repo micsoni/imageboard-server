@@ -23,4 +23,14 @@ router.post("/user", async (req, res, next) => {
   }
 });
 
+router.get("/user", async (req, res, next) => {
+  try {
+    const showUsers = await User.findAll();
+    console.log(showUsers)
+    res.send(showUsers);
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;
